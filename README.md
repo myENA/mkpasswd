@@ -10,7 +10,7 @@ Simple mkpasswd utility written in golang for platform portability.
 With a proper Go environment simply run:
 
 ```
-go get -u github.commyENA//mkpasswd
+go get -u github.com/myENA/mkpasswd
 ```
 
 ## Usage
