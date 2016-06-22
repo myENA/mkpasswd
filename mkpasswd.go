@@ -65,7 +65,7 @@ func main() {
 
 	// parse arguments and check return
 	if err = fs.Parse(os.Args[1:]); err != nil {
-		// oops ... show help and exit
+		// oops ... exit out
 		os.Exit(1)
 	}
 
