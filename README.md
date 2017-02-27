@@ -9,8 +9,18 @@ Simple mkpasswd utility written in golang for platform portability.
 
 With a proper Go environment simply run:
 
-```
+```bash
 go get -u github.com/myENA/mkpasswd
+```
+
+Optionally, if you have [glide](https://glide.sh) installed you may do a reproducible build:
+
+```bash
+cd $GOPATH/src
+git clone https://github.com/myENA/mkpasswd github.com/myENA/mkpasswd
+cd github.com/myENA/mkpasswd
+glide install
+go build
 ```
 
 ## Usage

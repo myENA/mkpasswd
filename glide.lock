@@ -1,0 +1,23 @@
+hash: 4b609acb1cce05b53befb4cda2f1c9dafd6505edbd95dfec905d401b067ca0f0
+updated: 2017-02-27T11:58:06.235288349-06:00
+imports:
+- name: github.com/howeyc/gopass
+  version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
+- name: github.com/tredoe/osutil
+  version: 7d3ee1afa71c90fd1514c8f557ae6c5f414208eb
+  subpackages:
+  - user/crypt
+  - user/crypt/apr1_crypt
+  - user/crypt/common
+  - user/crypt/md5_crypt
+  - user/crypt/sha256_crypt
+  - user/crypt/sha512_crypt
+- name: golang.org/x/crypto
+  version: 453249f01cfeb54c3d549ddb75ff152ca243f9d8
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: 62bee037599929a6e9146f29d10dd5208c43507d
+  subpackages:
+  - unix
+testImports: []

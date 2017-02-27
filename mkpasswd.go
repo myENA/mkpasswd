@@ -4,41 +4,45 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/howeyc/gopass"
-	"github.com/kless/osutil/user/crypt"
-	"github.com/kless/osutil/user/crypt/apr1_crypt"
-	"github.com/kless/osutil/user/crypt/md5_crypt"
-	"github.com/kless/osutil/user/crypt/sha256_crypt"
-	"github.com/kless/osutil/user/crypt/sha512_crypt"
 	"os"
 	"strings"
+
+	"github.com/howeyc/gopass"
+	"github.com/tredoe/osutil/user/crypt"
+	"github.com/tredoe/osutil/user/crypt/apr1_crypt"
+	"github.com/tredoe/osutil/user/crypt/md5_crypt"
+	"github.com/tredoe/osutil/user/crypt/sha256_crypt"
+	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
 )
 
 // read password from stdin
-func passwordPrompt() (string, bool) {
+func passwordPrompt() (string, error) {
 	var p1, p2 []byte // passwords
 	var err error     // error holder
 
-	// prompt user and read password
-	fmt.Print("Password: ")
-	if p1, err = gopass.GetPasswdMasked(); err != nil {
-		return "", false
-	}
+	// loop until match
+	for {
+		// prompt user and read password
+		fmt.Print("Password: ")
+		if p1, err = gopass.GetPasswdMasked(); err != nil {
+			return "", err
+		}
 
-	// prompt user and read confirmation
-	fmt.Print("Confirm:  ")
-	if p2, err = gopass.GetPasswdMasked(); err != nil {
-		return "", false
-	}
+		// prompt user and read confirmation
+		fmt.Print("Confirm:  ")
+		if p2, err = gopass.GetPasswdMasked(); err != nil {
+			return "", err
+		}
 
-	// compare passwords
-	if bytes.Equal(p1, p2) {
-		// return password string and true
-		return string(p1), true
-	}
+		// compare passwords and ensure non-nil
+		if bytes.Equal(p1, p2) && p1 != nil {
+			// return password string - no error
+			return string(p1), nil
+		}
 
-	// default return false
-	return "", false
+		// not equal - try again
+		fmt.Print("Password confirmation failed.  Please try again.\n")
+	}
 }
 
 // it all happens here
@@ -107,14 +111,9 @@ func main() {
 
 	// check password
 	if passwordString == "" {
-		var ok bool // validation check
-		for {
-			// prompt user and check return
-			if passwordString, ok = passwordPrompt(); ok {
-				break // we got what we needed
-			} else {
-				fmt.Print("Password mismatch or error.  Please try again.\n")
-			}
+		// prompt for password and check error
+		if passwordString, err = passwordPrompt(); err != nil {
+			fmt.Printf("Error reading passsword: %s", err.Error())
 		}
 	}
 
