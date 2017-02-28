@@ -97,7 +97,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// check salt
+	// check salt string
 	if saltString != "" {
 		// check length
 		if len(saltString) > saltMaxLen {
@@ -105,7 +105,7 @@ func main() {
 			fmt.Printf("Warning specified salt greater than max length (%d).  "+
 				"Salt will be truncated.\n", saltMaxLen)
 		}
-		// prepend appropriate magic prefix
+		// prepend appropriate magic prefix and salt
 		saltString = fmt.Sprintf("%s%s", saltPrefix, saltString)
 	}
 
@@ -114,14 +114,12 @@ func main() {
 		// prompt for password and check error
 		if passwordString, err = passwordPrompt(); err != nil {
 			fmt.Printf("Error reading passsword: %s", err.Error())
+			os.Exit(1)
 		}
 	}
 
-	// build hash
-	shadowHash, err = c.Generate([]byte(passwordString), []byte(saltString))
-
-	// check error
-	if err != nil {
+	// build hash and check error
+	if shadowHash, err = c.Generate([]byte(passwordString), []byte(saltString)); err != nil {
 		fmt.Printf("Failed to generate shadow hash: %s\n", err.Error())
 		os.Exit(1)
 	}
