@@ -10,6 +10,7 @@ import (
 	"github.com/howeyc/gopass"
 	"github.com/tredoe/osutil/user/crypt"
 	"github.com/tredoe/osutil/user/crypt/apr1_crypt"
+	"github.com/tredoe/osutil/user/crypt/common"
 	"github.com/tredoe/osutil/user/crypt/md5_crypt"
 	"github.com/tredoe/osutil/user/crypt/sha256_crypt"
 	"github.com/tredoe/osutil/user/crypt/sha512_crypt"
@@ -51,10 +52,10 @@ func main() {
 	var hashString string     // user supplied hash (optional)
 	var saltString string     // user supplied salt (optional)
 	var c crypt.Crypter       // hashing object
-	var saltPrefix string     // salt prefix set based on hash
-	var saltMaxLen int        // maximum salt length set based on hash
+	var s common.Salt         // salt parameters related to c
 	var shadowHash string     // generated shadow hash
 	var err error             // generic error holder
+	var rounds int            // number of rounds
 
 	// initialize flagset
 	fs := flag.NewFlagSet("mkpasswd", flag.ContinueOnError)
@@ -66,6 +67,7 @@ func main() {
 		"Optional salt argument without prefix")
 	fs.StringVar(&hashString, "hash", "sha512",
 		"Optional hash argument: sha512, sha256, md5 or apr1")
+	fs.IntVar(&rounds, "rounds", 0, "Optional number of rounds")
 
 	// parse arguments and check return
 	if err = fs.Parse(os.Args[1:]); err != nil {
@@ -77,20 +79,16 @@ func main() {
 	switch strings.ToLower(hashString) {
 	case "apr1":
 		c = crypt.New(crypt.APR1)
-		saltPrefix = apr1_crypt.MagicPrefix
-		saltMaxLen = apr1_crypt.SaltLenMax
+		s = apr1_crypt.GetSalt()
 	case "md5":
 		c = crypt.New(crypt.MD5)
-		saltPrefix = md5_crypt.MagicPrefix
-		saltMaxLen = md5_crypt.SaltLenMax
+		s = md5_crypt.GetSalt()
 	case "sha256":
 		c = crypt.New(crypt.SHA256)
-		saltPrefix = sha256_crypt.MagicPrefix
-		saltMaxLen = sha256_crypt.SaltLenMax
+		s = sha256_crypt.GetSalt()
 	case "sha512":
 		c = crypt.New(crypt.SHA512)
-		saltPrefix = sha512_crypt.MagicPrefix
-		saltMaxLen = sha512_crypt.SaltLenMax
+		s = sha512_crypt.GetSalt()
 	default:
 		fmt.Printf("Unknown hash (%s) specified.  "+
 			"Valid options: sha512 (default), sha256, md5 or apr1\n", hashString)
@@ -100,13 +98,21 @@ func main() {
 	// check salt string
 	if saltString != "" {
 		// check length
-		if len(saltString) > saltMaxLen {
+		if len(saltString) > s.SaltLenMax {
 			// warn user
 			fmt.Printf("Warning specified salt greater than max length (%d).  "+
-				"Salt will be truncated.\n", saltMaxLen)
+				"Salt will be truncated.\n", s.SaltLenMax)
 		}
 		// prepend appropriate magic prefix and salt
-		saltString = fmt.Sprintf("%s%s", saltPrefix, saltString)
+		if rounds != 0 && rounds != s.RoundsDefault {
+			saltString = fmt.Sprintf("%srounds=%d$%s", s.MagicPrefix, rounds, saltString)
+		} else {
+			saltString = fmt.Sprintf("%s%s", s.MagicPrefix, saltString)
+		}
+
+	} else if rounds > 0 {
+		// Generate the salt with required rounds.
+		saltString = string(s.GenerateWRounds(s.SaltLenMax, rounds))
 	}
 
 	// check password
