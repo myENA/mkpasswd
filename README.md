@@ -13,16 +13,6 @@ With a proper Go environment simply run:
 go get -u github.com/myENA/mkpasswd
 ```
 
-Optionally, if you have [glide](https://glide.sh) installed you may do a reproducible build:
-
-```bash
-cd $GOPATH/src
-git clone https://github.com/myENA/mkpasswd github.com/myENA/mkpasswd
-cd github.com/myENA/mkpasswd
-glide install
-go build
-```
-
 ## Usage
 
 ### Summary
@@ -34,6 +24,8 @@ Usage of mkpasswd:
         Optional hash argument: sha512, sha256, md5 or apr1 (default "sha512")
   -password string
         Optional password argument
+  -rounds int
+        Optional number of rounds
   -salt string
         Optional salt argument without prefix
 ```
